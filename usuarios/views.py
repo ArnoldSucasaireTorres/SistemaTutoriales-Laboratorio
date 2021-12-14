@@ -27,7 +27,7 @@ def foro(request):
         pregunta_usuario.append([pregunta,usuario])
 
     return render(request,'foro.html',{"preguntas": pregunta_usuario,"temas":temas,"areas":areas})
-
+####Función para mostrar pregunta#####
 def pregunta(request):
     #recibimos el id de la pregunta seleccionada en foro
     temas = list(usuarios.Tema.objects.all())
