@@ -5,24 +5,117 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hola munndo</title>
+    <title>Foro</title>
 </head>
 
 <body>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
     <h1>Foro de preguntas y respuestas</h1>    
-    <!--Botones para registrarse e iniciar sesion-->
-    <a href="/registro/"><input type="button" style="float: right;" value="Registrarse"></a>
-    <a href="/login/"><input type="button" style="float: right;" value="Iniciar Sesión"></a>
-    <input type="text">
-    <input type="button" value="Buscar">
-    
+
+    {% if request.user.is_authenticated %}
+        <!-- AL desarrollar el frontend se debe mejorar esta presentacion-->
+        <form action={% url 'logout_user' %} method="post">
+            {% csrf_token %}
+            <input type="submit" style="float: right;" value="Cerrar Sesión">
+        </form>
+        <p style="float: right;" >Bienvenido <a href="../verHistorial/{{request.user.id}}">{{ request.user.username }}</a> </p>
+    {% else %}
+        <!--Botones para registrarse e iniciar sesion-->
+        <a href={% url 'register' %}><input type="button" style="float: right;" value="Registrarse"></a>
+        <a href={% url 'login' %}><input type="button" style="float: right;" value="Iniciar Sesión"></a>
+    {% endif %}
+
+        <input id="enun" type="text" name="enun" placeholder="Enunciado">
+        
+        <label for="fname"> Area:</label>
+        
+        <select id="id_ar" name="id_ar">
+            {% for area in areas %}
+            <option value="{{area.id}}" >{{area.nombre}}</option>
+            {%endfor%}
+            <option value="0" selected></option> 
+        </select>
+        <label for="fname"> Tema:</label>
+        <select id="id_tem" name="id_tem" >
+            {% for tema in temas %}
+            <option value={{tema.id}} >{{tema.nombre}}</option> 
+            {%endfor%}
+            <option value="0" selected></option>
+        </select>
+        
+        <label for="fname"> Fecha:</label>
+        <input type="date" id ="date" name="date">
+        <button value="Buscar" id="Buscar">Buscar</button><br>
+    <a href="/formular_p/"><input type="button"  value="Formular pregunta"></a>       
     {%block cuerpo%}
-        <p>Preguntas</p>
-        {% for pregunta in preguntas %}
-            <a href="/pregunta/?id={{pregunta.id}}">{{pregunta.id}}{{pregunta.enunciado}}</a><br>
-            <span>Descripción: </span><span>{{pregunta.descripcion}}</span>
-        {%endfor%}
+    <div id="busqueda_ajax">
+    {%include "busqueda.html"%}
+    </div>
     {%endblock%}
+   
+<script>
+    let Buscar=document.getElementById("Buscar");
+    Buscar.addEventListener("click",buscar);
+    function buscar() {
+        //peticion xmlhttprequest general
+        let ajax = new XMLHttpRequest();
+        ajax.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("busqueda_ajax").innerHTML = this.responseText;
+            }
+        }
+        let url="/search_e/?";
+        let enun=document.getElementById("enun");
+        let id_ar=document.getElementById("id_ar");
+        let id_tem=document.getElementById("id_tem");
+        let date=document.getElementById("date");
+        
+        if (enun.value){
+            url+="enum="+enun.value+"&";
+        }
+        if (id_ar.value != 0){
+            url+="id_ar="+id_ar.value+"&";
+        }
+        if(id_tem.value !=0){
+            url+="id_tem="+id_tem.value+"&";
+        }
+        if(date.value){
+            url+="date="+date.value;
+        }
+        console.log(url);
+        ajax.open("GET", url, true);
+        ajax.send();
+    }
+
+    aniadir_evento_a_eliminar_pregunta();
+
+    function aniadir_evento_a_eliminar_pregunta(){
+        let eliminarPreg = document.querySelectorAll(".eliminarPreg");
+        for(let i=0;i<eliminarPreg.length;i++){
+            let elimP=eliminarPreg[i].addEventListener("click",eliminar_pregunta);
+        }
+    }
+    function eliminar_pregunta(){
+        let objeto=this;
+        let ajax=new XMLHttpRequest();
+        ajax.onreadystatechange=function (){
+            if(this.readyState==4 && this.status == 200){
+                location.reload();
+            }
+        }
+        url="pregunta_id="+objeto.getAttribute("pregunta_id");
+        ajax.open('GET',"/ePregunta/?"+url,true)
+        ajax.send();
+    }
+</script>
+
 </body>
 
 </html>

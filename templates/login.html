@@ -4,13 +4,35 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Stack Question Login</title>
 </head>
 <body>
-    <form action="" class="form" method="post">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    <!--Formulario del Login-->
+    <form action="" class="form" method="post" action={% url 'login' %}>
         {% csrf_token %}
-        {{ form.as_p }}
+        <!-- redireccion de foro -->
+        {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{request.GET.next}}">
+        {% endif %}
+        <p>
+            <label for="">Nombre de Usuario: </label>
+            <input type="text" required name="username" value="{{ data.username }}">
+        </p>
+        <p>
+            <label for="">Contraseña: </label>
+            <input type="password" required name="password">
+        </p>
         <button type="submit" id="submit">Iniciar Sesión</button>
     </form>
+    <p>
+        <div>¿No tienes una cuenta? <a href={% url 'register' %}> Registrarse</a></div>
+    </p>
 </body>
 </html>
